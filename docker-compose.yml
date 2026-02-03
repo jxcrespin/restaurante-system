@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: restaurant-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: restaurant_db
+      MYSQL_USER: restaurant_user
+      MYSQL_PASSWORD: restaurant_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  api:
+    build: ./backend
+    container_name: restaurant-api
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: mysql
+      DB_NAME: restaurant_db
+      DB_USER: restaurant_user
+      DB_PASS: restaurant_pass
+
+volumes:
+  mysql_data:
+

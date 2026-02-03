@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mesero - Pedidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Botones mesas y productos */
+    .table-btn, .btn-product {
+      font-size: 1.1rem;
+      padding: 12px;
+      white-space: nowrap;       /* evita salto de línea */
+      overflow: hidden;
+      text-overflow: ellipsis;   /* muestra ... si no cabe */
+    }
+
+    /* Pantallas pequeñas (smartphones) */
+    @media (max-width: 576px) {
+      .table-btn, .btn-product {
+        font-size: 0.9rem;   /* reduce texto en móvil */
+        padding: 14px 8px;  /* ajusta altura y ancho */
+      }
+      .list-group-item button {
+        padding: 10px 16px;
+        font-size: 1.2rem;
+      }
+       .action-btn {
+        font-size: 1.2rem;
+        padding: 8px;
+      }
+    }
+
+    /* Mesa seleccionada */
+    .selected {
+      color: white;
+    }
+
+    /* Mesa ocupada */
+    .occupied {
+      background-color: #6c757d !important;
+      color: white;
+    }
+
+    /* Mesa libre seleccionada */
+    .btn-outline-primary.selected {
+      background-color: #0d6efd !important;
+    }
+
+    /* Mesa ocupada seleccionada para liberar */
+    .selected.occupied {
+      background-color: #ffc107 !important; /* amarillo */
+    }
+
+    /* Botones de lista de pedido */
+    .list-group-item button {
+      padding: 6px 12px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body class="p-3">
+
+<h3>👨‍💼 Mesero - Nuevo Pedido</h3>
+
+<h5>Mesas</h5>
+<div id="tables" class="row g-2 mb-3"></div>
+
+<h5>Productos</h5>
+<div id="products" class="row g-2 mb-3"></div>
+
+<h5>Pedido actual</h5>
+<ul id="orderList" class="list-group mb-3"></ul>
+
+<div class="row g-2 mb-3">
+  <!-- Enviar pedido -->
+  <div class="col-12 col-md-4">
+    <button class="btn btn-success w-100 action-btn" onclick="sendOrder()">Enviar pedido</button>
+  </div>
+
+  <!-- Cancelar pedido -->
+  <div class="col-6 col-md-4">
+    <button class="btn btn-danger w-100 action-btn" onclick="cancelOrder()">Cancelar pedido</button>
+  </div>
+
+  <!-- Liberar mesa -->
+  <div class="col-6 col-md-4">
+    <button class="btn btn-warning w-100 action-btn" onclick="freeTable()">Liberar mesa</button>
+  </div>
+</div>
+
+<script>
+let selectedTable = null;
+let selectedTableStatus = null; // "FREE" o "OCCUPIED"
+let orderItems = {};
+
+// Cargar mesas con estado
+async function loadTables() {
+  const res = await fetch("/tables/status");
+  const tables = await res.json();
+  const div = document.getElementById("tables");
+  div.innerHTML = "";
+
+  tables.forEach(t => {
+    const col = document.createElement("div");
+    col.className = "col-3 col-sm-6 col-md-2"; // responsivo
+
+    const btn = document.createElement("button");
+    btn.className = "btn w-100 table-btn";
+
+    if (t.status === "OCCUPIED") {
+      btn.classList.add("occupied");
+    } else {
+      btn.classList.add("btn-outline-primary");
+    }
+
+    btn.innerText = "Mesa "+ t.number;
+
+    btn.onclick = () => selectTable(t.id, t.status, btn);
+
+    col.appendChild(btn);
+    div.appendChild(col);
+  });
+}
+
+// Seleccionar mesa
+function selectTable(id, status, btn) {
+  selectedTable = id;
+  selectedTableStatus = status;
+
+  document.querySelectorAll(".table-btn").forEach(b => b.classList.remove("selected"));
+
+  btn.classList.add("selected");
+  if (status === "OCCUPIED") btn.classList.add("occupied");
+}
+
+// Cargar productos
+async function loadProducts() {
+  const res = await fetch("/products");
+  const products = await res.json();
+  const div = document.getElementById("products");
+  div.innerHTML = "";
+
+  products.forEach(p => {
+    const col = document.createElement("div");
+    col.className = "col-6 col-sm-6 col-md-3"; // responsivo
+
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-secondary w-100 btn-product";
+    btn.innerText = p.name;
+    btn.onclick = () => addProduct(p.id, p.name);
+
+    col.appendChild(btn);
+    div.appendChild(col);
+  });
+}
+
+// Agregar producto al pedido
+function addProduct(id, name) {
+  if (!selectedTable) {
+    alert("Seleccione primero una mesa libre para hacer pedido");
+    return;
+  }
+  if (selectedTableStatus === "OCCUPIED") {
+    alert("No puede agregar productos a mesa ocupada. Use 'Liberar mesa' si desea liberar.");
+    return;
+  }
+  if (!orderItems[id]) orderItems[id] = { name, quantity: 0 };
+  orderItems[id].quantity++;
+  renderOrder();
+}
+
+// Mostrar pedido actual
+function renderOrder() {
+  const list = document.getElementById("orderList");
+  list.innerHTML = "";
+
+  Object.entries(orderItems).forEach(([id, item]) => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between align-items-center";
+    li.innerHTML = `
+      ${item.name} x${item.quantity}
+      <div>
+        <button class="btn btn-sm btn-outline-danger" onclick="removeProduct(${id})">-</button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// Disminuir cantidad de producto
+function removeProduct(id) {
+  orderItems[id].quantity--;
+  if (orderItems[id].quantity <= 0) delete orderItems[id];
+  renderOrder();
+}
+
+// Cancelar pedido
+function cancelOrder() {
+  orderItems = {};
+  selectedTable = null;
+  selectedTableStatus = null;
+  renderOrder();
+  document.querySelectorAll(".table-btn").forEach(b => b.classList.remove("selected"));
+}
+
+// Enviar pedido
+async function sendOrder() {
+  if (!selectedTable) {
+    alert("Seleccione una mesa libre");
+    return;
+  }
+  if (selectedTableStatus === "OCCUPIED") {
+    alert("Mesa ocupada, no puede enviar pedido. Use 'Liberar mesa'");
+    return;
+  }
+
+  const items = Object.entries(orderItems).map(([id, item]) => ({
+    product_id: parseInt(id),
+    quantity: item.quantity
+  }));
+
+  if (items.length === 0) {
+    alert("Agregue productos antes de enviar pedido");
+    return;
+  }
+
+  // Confirmación
+  let summary = `Mesa #${selectedTable}\n`;
+  Object.entries(orderItems).forEach(([id, item]) => {
+    summary += `${item.name} x${item.quantity}\n`;
+  });
+
+  if (!confirm("Confirme el pedido:\n" + summary)) return;
+
+  try {
+    const res = await fetch("/orders", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        table_id: selectedTable,
+        items: items
+      })
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      alert("Error al enviar pedido: " + text);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.success) {
+      alert("Pedido enviado");
+      cancelOrder();
+      loadTables();
+    }
+  } catch (err) {
+    alert("Error de conexión: " + err);
+  }
+}
+
+// Liberar mesa
+async function freeTable() {
+  if (!selectedTable) {
+    alert("Seleccione una mesa ocupada para liberar");
+    return;
+  }
+  if (selectedTableStatus !== "OCCUPIED") {
+    alert("Solo puede liberar mesas ocupadas");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/tables/${selectedTable}/free`, { method: "POST" });
+    if (!res.ok) {
+      const text = await res.text();
+      alert("Error liberando mesa: " + text);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.success) {
+      alert("Mesa liberada");
+      cancelOrder();
+      loadTables();
+    }
+  } catch (err) {
+    alert("Error de conexión: " + err);
+  }
+}
+
+// Inicializar pantalla
+loadTables();
+loadProducts();
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - Restaurante</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+
+<div class="card shadow p-4" style="width: 350px;">
+  <h4 class="text-center mb-3">🍽️ Sistema de Pedidos</h4>
+
+  <input id="user" class="form-control mb-2" placeholder="Usuario">
+  <input id="pass" type="password" class="form-control mb-3" placeholder="Clave">
+
+  <button class="btn btn-primary w-100" onclick="login()">Entrar</button>
+</div>
+
+<script>
+const API_URL = "";
+
+async function login() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  const res = await fetch(API_URL + "/login?username=" + u + "&password=" + p, {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    const role = data.user.role;
+    if (role === "WAITER") window.location = "/waiter";
+    if (role === "KITCHEN") window.location = "/kitchen";
+    if (role === "CASHIER") window.location = "/cashier";
+  } else {
+    alert("Usuario o clave incorrectos");
+  }
+}
+</script>
+
+</body>
+</html>
+
