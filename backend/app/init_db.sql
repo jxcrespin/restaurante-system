@@ -52,11 +52,11 @@ INSERT INTO tables (number) VALUES
 (1),(2),(3),(4),(5),(6),(7),(8);
 
 INSERT INTO categories (name) VALUES
-('Platos'),('Bebidas'),('Postres');
+('Platos'),('Caldos'),('Chuzos'),('Bebidas');
 
 INSERT INTO products (name, price, category_id) VALUES
-('Caldo de Gallina', 8.00, 1),
-('Caldo de Pata', 8.00, 1),
+('Caldo de Gallina', 8.00, 2),
+('Caldo de Pata', 8.00, 2),
 ('Camarones Apanados', 8.00, 1),
 ('Corvina Frita', 8.00, 1),
 ('Estofado de Carne', 8.00, 1),
@@ -68,10 +68,12 @@ INSERT INTO products (name, price, category_id) VALUES
 ('Seco de Costilla', 5.00, 1),
 ('Seco de Gallina', 8.00, 1),
 ('Seco de Pollo', 1.50, 1),
-('Jugo Personal', 0.50, 2),
-('Cola Personal', 0.50, 2),
-('Cola 1 Litro', 1.25, 2),
-('Fusetea', 1.50, 2);
+('Chuzo de Pollo', 1.50, 3),
+('Chuzo de Carne', 1.50, 3),
+('Jugo Personal', 0.50, 4),
+('Cola Personal', 0.50, 4),
+('Cola 1 Litro', 1.25, 4),
+('Fusetea', 1.50, 4);
 
 INSERT INTO users (username, password, role) VALUES
 ('mesero1', '1234', 'WAITER'),

@@ -26,6 +26,99 @@ body {
 	  .btn {
 		      font-size: 1.1rem;
 		          padding: 14px;
-			    }
-		    }
+	    }
+}
+
+		    
+.waiter-container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+/* PANEL CATEGORÍAS */
+.categories {
+    width: 15%;
+    background: #222;
+    color: white;
+    padding: 10px;
+}
+
+.categories button {
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+    border: none;
+    background: #444;
+    color: white;
+    cursor: pointer;
+}
+
+.categories button:hover {
+    background: #ff9800;
+}
+
+/* PANEL PRODUCTOS */
+.products {
+    width: 55%;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.product-card {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    border: 2px solid transparent;
+}
+
+.product-card:hover {
+    border-color: #ff9800;
+}
+
+.product-card .category {
+    font-size: 12px;
+    color: gray;
+}
+
+/* PANEL PEDIDO */
+.order-panel {
+    width: 30%;
+    background: #fafafa;
+    padding: 10px;
+    border-left: 2px solid #ddd;
+}
+
+.order-panel ul {
+    list-style: none;
+    padding: 0;
+}
+
+.order-panel li {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.order-panel button {
+    width: 100%;
+    padding: 12px;
+    background: #4caf50;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.order-panel button:hover {
+    background: #388e3c;
+}
 

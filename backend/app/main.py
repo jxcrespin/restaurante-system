@@ -17,7 +17,31 @@ def login_page(request: Request):
 
 @app.get("/waiter", response_class=HTMLResponse)
 def waiter_page(request: Request):
-    return templates.TemplateResponse("waiter.html", {"request": request})
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Obtener categorías
+    cursor.execute("SELECT id, name FROM categories")
+    categories = cursor.fetchall()
+
+    # Obtener productos con categoría
+    cursor.execute("""
+        SELECT p.id, p.name, p.price, c.name AS category_name
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+        ORDER BY c.name, p.name
+    """)
+    products = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return templates.TemplateResponse("waiter.html", {
+        "request": request,
+        "categories": categories,
+        "products": products
+    })
+
 
 @app.get("/kitchen", response_class=HTMLResponse)
 def kitchen_page(request: Request):
